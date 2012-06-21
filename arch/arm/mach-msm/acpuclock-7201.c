@@ -124,7 +124,6 @@ static struct clock_state drv_state = { 0 };
 static struct clkctl_acpu_speed *acpu_freq_tbl;
 
 static void __init acpuclk_init(void);
-unsigned int acpuclk_max_rate;
 
 /*
  * ACPU freq tables used for different PLLs frequency combinations. The
@@ -677,9 +676,6 @@ int acpuclk_set_rate(int cpu, unsigned long rate, enum setrate_reason reason)
 	struct clkctl_acpu_speed *cur_s, *tgt_s, *strt_s;
 	int res, rc = 0;
 	unsigned int plls_enabled = 0, pll;
-
-	if (acpuclk_max_rate < rate)
-		acpuclk_max_rate = rate;
 
 	if (reason == SETRATE_CPUFREQ)
 		mutex_lock(&drv_state.lock);
