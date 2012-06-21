@@ -90,7 +90,7 @@ struct shared_pll_control {
 	uint32_t	version;
 	struct {
 		/* Denotes if the PLL is ON. Technically, this can be read
-		 * directly from the PLL registers, but this feild is here,
+		 * directly from the PLL registers, but this field is here,
 		 * so let's use it.
 		 */
 		uint32_t	on;
@@ -124,6 +124,7 @@ static struct clock_state drv_state = { 0 };
 static struct clkctl_acpu_speed *acpu_freq_tbl;
 
 static void __init acpuclk_init(void);
+unsigned int acpuclk_max_rate;
 
 /*
  * ACPU freq tables used for different PLLs frequency combinations. The
@@ -315,6 +316,10 @@ static struct clkctl_acpu_speed pll0_960_pll1_245_pll2_1200_pll4_1008[] = {
 	{ 0, 504000, ACPU_PLL_4, 6, 1, 63000, 3, 6, 200000 },
 	{ 1, 600000, ACPU_PLL_2, 2, 1, 75000, 3, 6, 200000 },
 	{ 1, 1008000, ACPU_PLL_4, 6, 0, 126000, 3, 7, 200000},
+#ifdef CONFIG_MSM7X27AA_OVERCLOCK
+	/*enable, frequency, ppl?, pll_id?, freq_divider+1 ?,? freq divided by 8,?always 3, voltage level,? */
+    { 1, 1200000, ACPU_PLL_2, 2, 0, 150000, 3, 7, 200000 },
+#endif
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0} }
 };
 
@@ -389,6 +394,10 @@ static struct clkctl_acpu_speed pll0_960_pll1_737_pll2_1200_pll4_1008[] = {
 	{ 0, 504000, ACPU_PLL_4, 6, 1, 63000, 3, 6, 200000 },
 	{ 1, 600000, ACPU_PLL_2, 2, 1, 75000, 3, 6, 200000 },
 	{ 1, 1008000, ACPU_PLL_4, 6, 0, 126000, 3, 7, 200000},
+#ifdef CONFIG_MSM7X27AA_OVERCLOCK
+	/*enable, frequency, ppl?, pll_id?, freq_divider+1 ?,? freq divided by 8,?always 3, voltage level,? */
+    { 1, 1200000, ACPU_PLL_2, 2, 0, 150000, 3, 7, 200000 },
+#endif
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0} }
 };
 
@@ -404,6 +413,10 @@ static struct clkctl_acpu_speed pll0_960_pll1_589_pll2_1200_pll4_1008[] = {
 	{ 0, 504000, ACPU_PLL_4, 6, 1, 63000, 3, 6, 200000 },
 	{ 1, 600000, ACPU_PLL_2, 2, 1, 75000, 3, 6, 200000 },
 	{ 1, 1008000, ACPU_PLL_4, 6, 0, 126000, 3, 7, 200000},
+#ifdef CONFIG_MSM7X27AA_OVERCLOCK
+	/*enable, frequency, ppl?, pll_id?, freq_divider+1 ?,? freq divided by 8,?always 3, voltage level,? */
+    { 1, 1200000, ACPU_PLL_2, 2, 0, 150000, 3, 7, 200000 },
+#endif
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0} }
 };
 
@@ -664,6 +677,9 @@ int acpuclk_set_rate(int cpu, unsigned long rate, enum setrate_reason reason)
 	struct clkctl_acpu_speed *cur_s, *tgt_s, *strt_s;
 	int res, rc = 0;
 	unsigned int plls_enabled = 0, pll;
+
+	if (acpuclk_max_rate < rate)
+		acpuclk_max_rate = rate;
 
 	if (reason == SETRATE_CPUFREQ)
 		mutex_lock(&drv_state.lock);
